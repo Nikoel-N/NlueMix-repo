@@ -45,3 +45,23 @@ Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 **不要从网络共享或受限目录直接运行。** 某些受限执行环境会给该目录下的进程套上写入限制，
 表现是释放文件时报 `Access to the path ... is denied`，看起来像权限问题，其实是执行位置的限制。
 把 exe 拷到本地再跑即可。
+
+**运行中的 NlueMix 会把 DLL 映射住，覆盖释放会 `Access Denied`。** 这是最费时间的一个坑。
+`ExtractToFile(overwrite: true)` 内部是 `FileMode.Create`，也就是**截断重写**；
+而正在运行的 .NET 程序，它的程序集是被内存映射（image section）着的，**映射文件不允许被截断**，
+于是报 `Access to the path '...\Concentus.dll' is denied`。
+
+两个反直觉的地方：
+
+1. 用 `FileMode.Open` 去试开那个 DLL 是**测不出来**的 —— 不截断就能成功，会给你"文件没被占用"的假结论。
+2. 映射文件**可以改名，只是不能截断**。所以"把旧文件挪到一边、再写新的"能成功，
+   用户不必先关软件。
+
+现在安装程序的处理顺序是：尽力杀进程 → 覆盖失败重试 5 次 → 还不行就把旧文件改名成
+`xxx.dll.old` 再写新的（下次安装时清掉）。
+
+**`GetProcessesByName` 会返回早就死掉的进程条目。** Windows 上进程退出后，只要还有别的进程
+持有它的句柄（例如调试器、性能计数器），进程表项就一直留着 —— 实测有台机器上挂着 3 个几个月前
+就结束的条目（`Threads=0`）。所以**不要**用"列表非空"当"还在运行"，会永远等不到；
+也不要靠读 `Threads.Count` 判断死活 —— 读它需要权限，受限环境下会抛异常，
+活进程会被误判成死的。结论：杀进程只做 best-effort，正确性交给"改名挪走"那条兜底路径。

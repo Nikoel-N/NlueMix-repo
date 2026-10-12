@@ -33,12 +33,15 @@ try
 {
     Banner();
 
-    // ── 1. 关掉正在运行的 NlueMix
-    foreach (var p in Process.GetProcessesByName("NlueMix"))
-    {
-        try { p.Kill(); p.WaitForExit(3000); } catch { }
-    }
-    Thread.Sleep(600);
+    // ── 1. 尽量关掉正在运行的 NlueMix（关不掉也没关系，后面有兜底）
+    //
+    // ★ 这一步以前是「Kill 完 sleep 600ms 就走」，而且不重试、不兜底，
+    //   于是当 NlueMix 正开着时，覆盖释放会遇到：
+    //       Access to the path '...\Concentus.dll' is denied.
+    //   原因不是权限，也不是"文件被锁"这么笼统 —— 是正在运行的 .NET 程序
+    //   把程序集【内存映射】住了，映射文件不允许被截断覆盖。
+    //   现在改成：尽力杀 + 覆盖失败重试 + 还不行就把旧文件改名挪走（见 ExtractWithRetry）。
+    TryKillRunningNlueMix();
 
     // ── 2. 清空旧版本
     if (Directory.Exists(targetDir))
@@ -46,6 +49,12 @@ try
         try { Directory.Delete(targetDir, true); } catch { }
     }
     Directory.CreateDirectory(targetDir);
+
+    // 上次安装留下的 .old（被占用的旧文件挪过来的）顺手清掉
+    foreach (var stale in Directory.GetFiles(targetDir, "*.old"))
+    {
+        try { File.Delete(stale); } catch { }
+    }
 
     // ── 3. 解包内嵌文件到目标目录（直接写，不经过临时目录）
     Console.WriteLine("  正在解包程序文件...");
@@ -62,7 +71,7 @@ try
             string dest = Path.Combine(targetDir, rel);
             string dir = Path.GetDirectoryName(dest);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-            entry.ExtractToFile(dest, true);
+            ExtractWithRetry(entry, dest);
             fileCount++;
         }
     }
@@ -112,6 +121,16 @@ catch (Exception ex)
 {
     Console.WriteLine();
     Console.WriteLine("  [失败] " + ex.Message);
+
+    // "Access to the path ... is denied" 几乎总是"文件被占用"，不是权限问题。
+    // 不说清楚的话，用户会去折腾文件夹权限，方向完全错。
+    if (ex is UnauthorizedAccessException)
+    {
+        Console.WriteLine();
+        Console.WriteLine("  提示：这个报错几乎都是因为 NlueMix 还在运行、文件被占用，");
+        Console.WriteLine("        而不是文件夹权限问题。请在托盘或任务管理器里结束 NlueMix.exe 后重试。");
+    }
+
     Console.WriteLine();
     Console.WriteLine(ex.ToString());
     Console.WriteLine();
@@ -120,6 +139,67 @@ catch (Exception ex)
 }
 
 // ─────────────────────────────────────────────────────────
+
+/// <summary>
+/// 尽力结束正在运行的 NlueMix，然后稍微等一下。
+///
+/// 这里【不做】"杀不掉就报错退出"，原因有两个：
+///   · 进程表里可能挂着早就死掉、但表项一直没释放的条目（实测这台机器上有 3 个），
+///     拿它们当"还在运行"会永远等不到结果；
+///   · 判断进程死活要读 Threads，而读 Threads 需要权限，在受限环境里会失败，
+///     于是活进程被误判成死的 —— 反而更危险。
+/// 覆盖文件失败有 ExtractWithRetry 兜底，所以这里只需要尽力而为。
+/// </summary>
+static void TryKillRunningNlueMix()
+{
+    foreach (var p in Process.GetProcessesByName("NlueMix"))
+    {
+        try { p.Kill(); } catch { }     // 已经退出的、没权限的，都会抛，直接忽略
+    }
+    Thread.Sleep(800);                  // 给它一点时间松开文件句柄
+}
+
+/// <summary>
+/// 覆盖释放单个文件。写不进去时的处理顺序：
+///   1) 重试几次 —— 进程刚被杀掉时句柄不一定立刻释放；
+///   2) 还不行就把旧文件改名挪到一边，再写新的。
+///
+/// 第 2 步是关键：正在运行的 .NET 程序，它的程序集是被【内存映射】着的。
+/// 这种文件不允许被截断覆盖（FileMode.Create 会得到 Access Denied），
+/// 但**允许改名**。所以"挪走旧的、写进新的"能成功，用户不必先关软件。
+/// 旧文件留成 .old，下次安装时顺手清掉。
+/// </summary>
+static void ExtractWithRetry(ZipArchiveEntry entry, string dest)
+{
+    Exception? last = null;
+
+    for (int attempt = 1; attempt <= 5; attempt++)
+    {
+        try { entry.ExtractToFile(dest, true); return; }
+        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+        {
+            last = ex;
+            Thread.Sleep(300);
+        }
+    }
+
+    if (File.Exists(dest))
+    {
+        string parked = dest + ".old";
+        try
+        {
+            if (File.Exists(parked)) File.Delete(parked);
+            File.Move(dest, parked);
+            entry.ExtractToFile(dest, true);
+            Console.WriteLine("  （" + Path.GetFileName(dest) + " 当时被占用，旧文件已挪到 "
+                              + Path.GetFileName(parked) + "，不影响使用）");
+            return;
+        }
+        catch { }
+    }
+
+    throw last ?? new IOException("无法写入 " + dest);
+}
 
 static void Banner()
 {
