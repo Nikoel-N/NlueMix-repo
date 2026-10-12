@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+      ══════════ 浅色主题调色板 ══════════
+
+      key 与 Theme.Dark.xaml 完全一致，只有值不同 —— 这是能整体切换的前提。
+
+      浅色主题的注意点（不是把深色简单反相就行）：
+        1. 浅色下"层次"要靠【阴影和浅灰】表达，不能靠明度递进 ——
+           白底上再放浅灰卡会显脏，所以卡片用纯白 + 阴影，容器用极浅灰。
+        2. 主色要压深一点。深色主题里的 #4C8DFF 在白底上对比度不够，
+           文字压不住；浅色主题用 #2F6BE0。
+        3. 分隔线要更明显。深色主题用 8% 白，浅色主题要 8% 黑才看得见。
+        4. 状态色（成功/警告/危险）要整体压深，否则在白底上"发飘"。
+        5. 阴影要更柔更淡 —— 白底上重阴影会像脏污。
+    -->
+
+    <LinearGradientBrush x:Key="Bg" StartPoint="0,0" EndPoint="0.7,1">
+        <GradientStop Color="#FFF7F9FC" Offset="0" />
+        <GradientStop Color="#FFEDF1F7" Offset="1" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="Surface1" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="Surface2" Color="#FFF7F9FC" />
+    <SolidColorBrush x:Key="Surface3" Color="#FFEEF2F8" />
+    <SolidColorBrush x:Key="Card" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="CardHover" Color="#FFF7F9FC" />
+
+    <SolidColorBrush x:Key="Accent" Color="#FF2F6BE0" />
+    <SolidColorBrush x:Key="AccentDeep" Color="#FF1F55C0" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#222F6BE0" />
+    <SolidColorBrush x:Key="Good" Color="#FF0E9F63" />
+    <SolidColorBrush x:Key="Warn" Color="#FFB87400" />
+    <SolidColorBrush x:Key="Bad" Color="#FFD2352F" />
+
+    <SolidColorBrush x:Key="Text" Color="#FF101828" />
+    <SolidColorBrush x:Key="TextDim" Color="#FF5A6478" />
+    <SolidColorBrush x:Key="TextFaint" Color="#FF8A94A8" />
+
+    <SolidColorBrush x:Key="Line" Color="#14000000" />
+    <SolidColorBrush x:Key="LineStrong" Color="#26000000" />
+    <SolidColorBrush x:Key="Field" Color="#FFF1F4F9" />
+    <SolidColorBrush x:Key="FieldHover" Color="#FFE8EDF5" />
+    <SolidColorBrush x:Key="PopupBg" Color="#FFFFFFFF" />
+
+    <!-- 浅色下"更亮"意味着更白，所以这三个在浅色主题里是白而非黑 -->
+    <SolidColorBrush x:Key="TintSubtle" Color="#08000000" />
+    <SolidColorBrush x:Key="TintHover" Color="#12000000" />
+    <SolidColorBrush x:Key="TintPress" Color="#1E000000" />
+
+    <DropShadowEffect x:Key="ShadowCard" BlurRadius="18" ShadowDepth="2" Direction="270"
+                      Color="#FF2A3550" Opacity="0.13" />
+    <DropShadowEffect x:Key="ShadowPopup" BlurRadius="26" ShadowDepth="6" Direction="270"
+                      Color="#FF2A3550" Opacity="0.20" />
+</ResourceDictionary>

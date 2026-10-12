@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="NlueMix"
+            android:textColor="#111111"
+            android:textSize="34sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="36dp"
+            android:text="把手机的声音发到电脑的音响"
+            android:textColor="#888888"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="电脑地址"
+            android:textColor="#555555"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/hostInput"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="6dp"
+            android:autofillHints=""
+            android:backgroundTint="#CCCCCC"
+            android:hint="例如 192.168.1.8"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="#111111"
+            android:textColorHint="#BBBBBB"
+            android:textSize="17sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="连接码（电脑上显示的 4 位数字）"
+            android:textColor="#555555"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/codeInput"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="6dp"
+            android:autofillHints=""
+            android:backgroundTint="#CCCCCC"
+            android:hint="0000"
+            android:inputType="number"
+            android:letterSpacing="0.4"
+            android:maxLines="1"
+            android:textColor="#111111"
+            android:textColorHint="#BBBBBB"
+            android:textSize="24sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/micSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#111111" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="用麦克风采集（兼容模式）"
+                    android:textColor="#111111"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="部分手机不允许抓系统声音时用这个。需要手机外放，音质会打折。走 TCP 传输，不怕防火墙拦 UDP。"
+                    android:textColor="#999999"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 自动配置入口：需要采「没声明允许采集」的应用（B 站等）时走这条 -->
+        <Button
+            android:id="@+id/autoConfigButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="#EEEEEE"
+            android:text="自动配置无线调试（可采集全部应用）"
+            android:textAllCaps="false"
+            android:textColor="#111111"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="62dp"
+            android:layout_marginTop="36dp"
+            android:backgroundTint="#111111"
+            android:text="开始串流"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/logText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="#F5F5F5"
+            android:fontFamily="monospace"
+            android:padding="10dp"
+            android:textColor="#444444"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/hintText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:lineSpacingExtra="4dp"
+            android:text="第一次使用：先在电脑上打开 NlueMix，界面上会显示电脑的地址和 4 位连接码。"
+            android:textColor="#999999"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+</ScrollView>

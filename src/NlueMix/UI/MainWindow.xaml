@@ -1,0 +1,343 @@
+<Window x:Class="NlueMix.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:NlueMix.UI"
+        Title="NlueMix 蓝牙串流混音器"
+        Icon="pack://application:,,,/Assets/nluemix.ico"
+        Height="700" Width="568"
+        MinHeight="580" MinWidth="524"
+        Background="{DynamicResource Bg}"
+        FontFamily="{StaticResource UiFont}"
+        WindowStartupLocation="CenterScreen"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+
+    <Grid Margin="16,14,16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ══════════ 顶栏 ══════════ -->
+        <StackPanel Grid.Row="0" Margin="2,2,2,16">
+
+            <!-- 品牌行：LOGO + 名字；右侧一个主题切换 -->
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Border Width="34" Height="34" CornerRadius="10" Background="White" Margin="0,0,11,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="14" ShadowDepth="0" Color="#FF4C8DFF" Opacity="0.35" />
+                        </Border.Effect>
+                        <Image Source="pack://application:,,,/Assets/nluemix.ico" Stretch="Uniform" Margin="3" />
+                    </Border>
+                    <TextBlock Text="NlueMix" FontSize="17" FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource Text}" />
+                </StackPanel>
+
+                <!--
+                  深浅主题切换。
+                  放这里而不是塞进工具条：工具条已经有 5 个按钮，
+                  再加一个每个只剩 94px，"图标 + 完整名称"就又要被截断了。
+                -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnFeedback" Style="{StaticResource IconButton}" Content="✉"
+                            ToolTip="反馈与联系" vm:LocTag.ToolTipKey="fb.title" Click="OnFeedback" />
+                    <Button x:Name="BtnLanguage" Style="{StaticResource IconButton}" Content="🌐"
+                            ToolTip="界面语言 / Language" vm:LocTag.ToolTipKey="btn.language" Click="OnPickLanguage" />
+                    <Button x:Name="BtnTheme" Style="{StaticResource IconButton}" Content="🌙"
+                            ToolTip="切换深色 / 浅色" vm:LocTag.ToolTipKey="btn.theme" Click="OnToggleTheme" />
+                </StackPanel>
+            </Grid>
+
+            <!--
+              功能条：图标 + 名称。
+              名称沿用原来的叫法（原来在 ToolTip 里），一个字没改。
+              Content 是「图标 + 两个空格 + 名称」，代码里需要切状态的按钮
+              （例如采集的 🔌/⏹）直接换整串字符串即可。
+            -->
+            <!--
+              这里原本是 UniformGrid Rows="1"：5 个按钮均分固定宽度。
+              中文按钮名刚好放得下，所以一直没暴露问题；但英文/俄文的按钮名更长，
+              会被从中间硬截断（实测英文显示成 "Rescan sp"、"Fix firewa"）。
+              换成 WrapPanel：按钮按内容取宽，一行放不下就自动换行 ——
+              任何语言都不会被截断，也不用为了版面去迁就某个语言的译文长度。
+            -->
+            <WrapPanel Margin="0,14,0,0">
+                <Button x:Name="BtnRefresh" Style="{StaticResource ToolButton}" Content="⟳  重新扫描音响"
+                        ToolTip="重新扫描音响" vm:LocTag.ToolTipKey="btn.rescan" Click="OnRefreshClick" />
+                <Button x:Name="BtnUsb" Style="{StaticResource ToolButton}" Content="🔌  采集手机声音"
+                        ToolTip="采集手机声音（无损 48kHz）。手机端 App 采不到声音的机型用这个：手机走 Wi-Fi 时点这里即可，程序会自动找手机。"
+                        vm:LocTag.ToolTipKey="tip.capture"
+                        Click="OnUsbCaptureClick" />
+                <Button x:Name="BtnFirewall" Style="{StaticResource ToolButton}" Content="🛡  修复防火墙"
+                        ToolTip="手机连不上电脑？点这里检查并修复 Windows 防火墙放行。&#x0a;防火墙规则是按「程序路径 + 网络配置」匹配的，网络配置一变就可能失效。"
+                        vm:LocTag.ToolTipKey="tip.firewall"
+                        Click="OnFirewallClick" />
+                <Button x:Name="BtnManualPair" Style="{StaticResource ToolButton}" Content="🔗  手动配对"
+                        ToolTip="手动连接手机：自动配置读不到端口时，用这个把手机「无线调试」页面上的 IP、端口、配对码填进来。配对只需一次。"
+                        vm:LocTag.ToolTipKey="tip.pair"
+                        Click="OnManualPairClick" />
+                <Button x:Name="BtnSettings" Style="{StaticResource ToolButton}" Content="⚙  蓝牙设置"
+                        ToolTip="打开 Windows 蓝牙设置" vm:LocTag.ToolTipKey="btn.bluetooth" Click="OnOpenBluetoothSettings" />
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- ══════════ 音响卡片 ══════════ -->
+        <Grid Grid.Row="1" Margin="0,0,0,14">
+        <Border Style="{StaticResource CardBorder}" Padding="14,13">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Width="42" Height="42" CornerRadius="12"
+                        Background="{DynamicResource Surface3}"
+                        VerticalAlignment="Center" Margin="0,0,12,0">
+                    <TextBlock Text="🔊" FontSize="19" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtSpeakerName" Text="正在查找音响…" Style="{StaticResource Title}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                        <Ellipse x:Name="DotSpeaker" Style="{StaticResource Dot}" Margin="0,0,6,0" />
+                        <TextBlock x:Name="TxtSpeakerStatus" Text="未连接" Style="{StaticResource Sub}" />
+                    </StackPanel>
+                    <TextBlock x:Name="TxtSpeakerDetail" Text="" Style="{StaticResource Hint}" Margin="0,3,0,0" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnConnect" Style="{StaticResource PrimaryButton}" Content="连接"
+                            Click="OnConnectSpeaker" Margin="0,0,6,0" />
+                    <Button x:Name="BtnSpeakerMenu" Style="{StaticResource IconButton}" Content="▾"
+                            ToolTip="选择音响" vm:LocTag.ToolTipKey="speaker.pick" Click="OnPickSpeaker" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+            <!-- 音响下拉列表 -->
+            <Popup x:Name="SpeakerPopup" PlacementTarget="{Binding ElementName=BtnSpeakerMenu}"
+                   Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                <Border Background="{DynamicResource CardHover}" CornerRadius="10" Padding="6"
+                        BorderBrush="{DynamicResource Line}" BorderThickness="1" MinWidth="260">
+                    <StackPanel>
+                        <TextBlock Text="选择音响" Tag="speaker.pick" Style="{StaticResource SectionLabel}" Margin="6,4,0,4" />
+                        <ItemsControl x:Name="SpeakerList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button HorizontalContentAlignment="Left" Background="Transparent" BorderThickness="0"
+                                            Padding="8,7" Cursor="Hand" Click="OnSpeakerPicked" Tag="{Binding}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="Transparent" CornerRadius="7"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TintHover}" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource Text}" FontSize="12.5" />
+                                            <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource TextDim}" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="＋ 配对新音响（打开系统蓝牙设置）" Tag="speaker.addnew" Style="{StaticResource GhostButton}"
+                                Margin="2,6,2,2" HorizontalContentAlignment="Left" Click="OnOpenBluetoothSettings" />
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+
+        <!-- ══════════ 手机怎么连（IP + 连接码）══════════ -->
+        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="14,13" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="手机怎么连" Tag="howto.title" Style="{StaticResource SectionLabel}" Margin="0,0,0,8" />
+
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="电脑地址" Tag="howto.pcaddr" Style="{StaticResource Sub}" VerticalAlignment="Center" Width="80" />
+                    <TextBlock Grid.Column="1" x:Name="TxtIp" Text="检测中…" Foreground="{DynamicResource Text}"
+                               FontSize="18" FontFamily="Consolas, Microsoft YaHei UI" FontWeight="Bold"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Style="{StaticResource IconButton}" Content="📋" FontSize="11"
+                            ToolTip="复制地址" vm:LocTag.ToolTipKey="btn.copyaddr" Click="OnCopyIp" />
+                </Grid>
+
+                <!-- 电脑有多个网卡时（有线 + 无线 + 热点），把其他地址也列出来 -->
+                <ItemsControl x:Name="OtherIpList" Margin="80,0,0,8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                <Ellipse Style="{StaticResource Dot}" Width="5" Height="5" Margin="0,0,7,0"
+                                         Fill="{DynamicResource TextFaint}" />
+                                <TextBlock Text="{Binding Address}" Foreground="{DynamicResource TextDim}"
+                                           FontFamily="Consolas, Microsoft YaHei UI" FontSize="12.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Hint}" Foreground="{DynamicResource TextFaint}"
+                                           FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                <Button Style="{StaticResource IconButton}" Content="📋" FontSize="10"
+                                        Width="24" Height="20" Margin="6,0,0,0"
+                                        Click="OnCopyOtherIp" Tag="{Binding Address}" ToolTip="复制这个地址"
+                                        vm:LocTag.ToolTipKey="btn.copyother" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="连接码" Tag="howto.code" Style="{StaticResource Sub}" VerticalAlignment="Center" Width="80" />
+                    <TextBlock Grid.Column="1" x:Name="TxtCode" Text="----" Foreground="{DynamicResource Accent}"
+                               FontSize="22" FontFamily="Consolas, Microsoft YaHei UI" FontWeight="Bold"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Style="{StaticResource IconButton}" Content="📋" FontSize="11"
+                            ToolTip="复制连接码" vm:LocTag.ToolTipKey="btn.copycode" Click="OnCopyCode" />
+                </Grid>
+
+                <TextBlock x:Name="TxtConnectHint" Style="{StaticResource Hint}" Margin="0,9,0,0"
+                           Text="手机上打开 NlueMix → 填上面这两项 → 点开始串流" />
+            </StackPanel>
+        </Border>
+
+        <!-- ══════════ 手机音源标题 ══════════ -->
+        <TextBlock Grid.Row="3" Text="手机音源" Tag="sources.title" Style="{StaticResource SectionLabel}" Margin="2,0,2,8" />
+
+        <!-- ══════════ 三路手机卡片 ══════════ -->
+        <ItemsControl Grid.Row="4" x:Name="SourceList" VerticalAlignment="Top">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource CardBorder}" Padding="13,11" Margin="0,0,0,9">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Width="34" Height="34" CornerRadius="10"
+                                    Background="{DynamicResource Surface3}" VerticalAlignment="Center" Margin="0,0,11,0">
+                                <TextBlock Text="{Binding Icon}" FontSize="15" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+
+                            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Style="{StaticResource Dot}" Fill="{Binding StatusBrush}" Margin="0,0,7,0" />
+                                <TextBlock Text="{Binding Name}" Style="{StaticResource Title}" FontSize="13.5" />
+                                <Border Background="{DynamicResource Surface3}" CornerRadius="6" Padding="6,1.5" Margin="8,0,0,0"
+                                        Visibility="{Binding BadgeVisibility}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Badge}" FontSize="10" Foreground="{DynamicResource TextDim}" />
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Detail}" Style="{StaticResource Hint}"
+                                       Margin="0,3,0,0" />
+
+                            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding LevelText}" Foreground="{DynamicResource TextFaint}" FontSize="10"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" Width="46"
+                                           TextAlignment="Right" />
+                                <Slider Style="{StaticResource VolumeSlider}" Width="96" VerticalAlignment="Center"
+                                        Value="{Binding Volume, Mode=TwoWay}"
+                                        IsEnabled="{Binding IsOnline}" />
+                                <Button Style="{StaticResource IconButton}" Content="{Binding MuteIcon}"
+                                        Click="OnToggleMute" Tag="{Binding}" Margin="6,0,0,0"
+                                        IsEnabled="{Binding IsOnline}" />
+                            </StackPanel>
+
+                            <ProgressBar Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource LevelBar}"
+                                         Value="{Binding LevelPercent, Mode=OneWay}" Margin="0,7,0,0" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- ══════════ 总音量 + 模式 ══════════ -->
+        <Border Grid.Row="5" Style="{StaticResource CardBorder}" Padding="14,12" Margin="0,4,0,0">
+            <StackPanel>
+                <Grid>
+                    <TextBlock Text="总音量" Tag="volume.title" Style="{StaticResource SectionLabel}" Margin="0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtMasterValue" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextDim}" FontSize="11.5" Text="85%" />
+                </Grid>
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Slider x:Name="MasterSlider" Grid.Column="0" Style="{StaticResource VolumeSlider}"
+                            Value="85" ValueChanged="OnMasterVolumeChanged" VerticalAlignment="Center" />
+                    <Button x:Name="BtnMuteAll" Grid.Column="1" Style="{StaticResource IconButton}" Content="🔊"
+                            ToolTip="全部静音 / 恢复" vm:LocTag.ToolTipKey="btn.muteall" Margin="8,0,0,0" Click="OnMuteAll" />
+                </Grid>
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="手机出声时，电脑怎么办" Tag="duck.title" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                        <ComboBox x:Name="ModeCombo" Style="{StaticResource Combo}" SelectionChanged="OnModeChanged"
+                          ItemContainerStyle="{StaticResource ComboItem}">
+                            <ComboBoxItem Content="自动让路：手机一响，电脑静音（推荐）" Tag="duck.auto" />
+                            <ComboBoxItem Content="自动压低：电脑音量降到 20%" Tag="duck.lower" />
+                            <ComboBoxItem Content="一起放：不分主次" Tag="duck.together" />
+                            <ComboBoxItem Content="手动：只用下面按钮切" Tag="duck.manual" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Bottom">
+                        <TextBlock Text="电脑声音" Tag="duck.pctitle" Style="{StaticResource SectionLabel}" Margin="0,0,0,4" />
+                        <Button x:Name="BtnManualYield" Style="{StaticResource GhostButton}" Content="手动让路" Width="86"
+                                Click="OnManualYield" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ══════════ 状态栏 ══════════ -->
+        <Grid Grid.Row="6" Margin="4,12,4,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse x:Name="DotEngine" Style="{StaticResource Dot}" Margin="0,0,6,0" />
+                    <TextBlock x:Name="TxtEngine" Text="引擎未启动" Style="{StaticResource Sub}" />
+                </StackPanel>
+                <TextBlock x:Name="TxtAdvanced" Text="" Style="{StaticResource Hint}" Margin="15,3,0,0" />
+            </StackPanel>
+            <Button Grid.Column="1" Style="{StaticResource IconButton}" Content="ⓘ"
+                    ToolTip="查看日志和连接信息" vm:LocTag.ToolTipKey="btn.info" Click="OnShowInfo" VerticalAlignment="Top" />
+        </Grid>
+    </Grid>
+</Window>

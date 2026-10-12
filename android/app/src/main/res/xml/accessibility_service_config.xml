@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  自动配置用的无障碍服务配置。
+
+  设计原则：只要完成任务所必需的能力，不要更多。
+    · canRetrieveWindowContent  读窗口内容（必须，要读端口号和配对码）
+    · canPerformGestures        点按（必须，要开开关）
+    · flagReportViewIds         保留 viewId，便于精确定位控件
+    · 不要 flagRequestFilterKeyEvents / 不要监听 typeViewTextChanged，
+      那两个会拿到用户输入的任何字符（含密码），我们不需要。
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagReportViewIds|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:canPerformGestures="true"
+    android:description="@string/auto_config_description"
+    android:notificationTimeout="100"
+    android:settingsActivity="com.nluemix.sender.AutoConfigActivity" />

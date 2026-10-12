@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>NlueMix-安装程序</AssemblyName>
+    <RootNamespace>NlueMix.Setup</RootNamespace>
+    <Version>0.2.0</Version>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <!-- 安装程序要写 Program Files 之外的位置、还要建防火墙规则，所以直接声明要管理员。
+         安装程序弹一次 UAC 是用户预期之内的行为。 -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>payload/nluemix.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>en;zh-Hans</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 程序本体（用户版）打成 zip 嵌进来 —— 单文件分发，双击就能装 -->
+    <EmbeddedResource Include="payload\app.zip" LogicalName="app.zip" />
+  </ItemGroup>
+
+</Project>

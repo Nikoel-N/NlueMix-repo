@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <!-- 显式列出隐式 using：不要 WinForms/Drawing 那一套，否则 Button/Brush/Timer 全都会与 WPF 撞名 -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>NlueMix</RootNamespace>
+    <AssemblyName>NlueMix</AssemblyName>
+    <ApplicationIcon>Assets\nluemix.ico</ApplicationIcon>
+    <Version>0.2.0</Version>
+    <Product>NlueMix</Product>
+    <Company>NlueMix Open Source</Company>
+    <Copyright>MIT License</Copyright>
+    <Platforms>AnyCPU;x64</Platforms>
+    <AssemblyTitle>NlueMix 蓝牙串流混音器</AssemblyTitle>
+    <SatelliteResourceLanguages>en;zh-Hans</SatelliteResourceLanguages>
+    <EnableDefaultApplicationDefinition>true</EnableDefaultApplicationDefinition>
+    <!-- 兼容旧属性名（若存在） -->
+  </PropertyGroup>
+
+  <!--
+    ★ 用户版 / 开发者版
+
+      构建命令：
+        用户版    dotnet publish -c Release
+        开发者版  dotnet publish -c Release -p:DevBuild=true
+
+      注意这里用的是【追加】$(DefineConstants)，不是直接赋值。
+      直接写 <DefineConstants>DEV_BUILD</DefineConstants> 会把 SDK 默认的
+      TRACE/DEBUG 等一起顶掉，症状是编译能过但某些条件编译分支行为变了。
+  -->
+  <PropertyGroup Condition="'$(DevBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);DEV_BUILD</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 自己列隐式 using，避免 WinForms SDK 注入 System.Windows.Forms / System.Drawing 造成同名冲突 -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Net" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 窗口图标：必须作为 WPF 资源嵌进程序集，否则 XAML 里的 pack:// 引用会找不到 -->
+    <Resource Include="Assets\nluemix.ico" />
+
+    <!-- USB（adb）采集服务端：用 app_process 以 shell 身份运行本项目自己的采集程序。
+         LogicalName 固定成 nluemix-server.jar，运行时代码按这个名字取。 -->
+    <EmbeddedResource Include="Assets\nluemix-server.jar" LogicalName="nluemix-server.jar" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Concentus" Version="2.2.2" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>

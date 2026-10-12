@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  开屏风险提示页。
+  设计要点：所有文字统一字号（正文 12sp、标题 22sp、副标题 13sp），
+  正文可滚动，没有任何小字。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FF14161A"
+    android:padding="18dp">
+
+    <TextView
+        android:id="@+id/riskTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:text="NlueMix 使用前必读" />
+
+    <TextView
+        android:id="@+id/riskSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#FFB9BEC7"
+        android:textSize="13sp"
+        android:lineSpacingExtra="4dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="14dp"
+        android:background="#FF0E1013"
+        android:padding="12dp">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <TextView
+                android:id="@+id/riskBody"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFD7DBE0"
+                android:textSize="12sp"
+                android:typeface="monospace"
+                android:lineSpacingExtra="4dp" />
+        </HorizontalScrollView>
+    </ScrollView>
+
+    <CheckBox
+        android:id="@+id/riskCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:textColor="#FFE8EAED"
+        android:textSize="13sp"
+        android:text="我确认已完整阅读以上全部内容" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="#FF8A9099"
+        android:textSize="12sp"
+        android:text="按返回键即退出，软件不会做任何事。" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <Button
+            android:id="@+id/riskClosePermanently"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="#FF2A2E36"
+            android:textColor="#FFB9BEC7"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:text="同意，并永久关闭" />
+
+        <Button
+            android:id="@+id/riskAgree"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.4"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#FF2F6FED"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:text="我已阅读并同意，继续" />
+    </LinearLayout>
+</LinearLayout>

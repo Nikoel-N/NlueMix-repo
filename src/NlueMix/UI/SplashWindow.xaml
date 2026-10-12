@@ -1,0 +1,47 @@
+<Window x:Class="NlueMix.UI.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NlueMix"
+        Width="420" Height="240"
+        WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+
+    <!--
+      开屏动画。
+      做法说明：文字不是一个 TextBlock，而是【每个字母一个 TextBlock】，
+      这样可以对每个字母单独做"从下方滑入 + 淡入"的错位动画，
+      形成"写出来"的观感。整段约 1.6 秒，之后窗口淡出。
+      全程只改 Opacity 和 RenderTransform，不触发重新布局，所以很轻。
+    -->
+    <Border CornerRadius="18" Background="#F20B0F17" BorderBrush="#22FFFFFF" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="34" ShadowDepth="0" Color="#FF4C8DFF" Opacity="0.35" />
+        </Border.Effect>
+
+        <Grid>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                <!-- 图标：先缩放淡入 -->
+                <Border x:Name="LogoBox" Width="58" Height="58" CornerRadius="16"
+                        Background="White" HorizontalAlignment="Center"
+                        Opacity="0" RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform x:Name="LogoScale" ScaleX="0.7" ScaleY="0.7" />
+                    </Border.RenderTransform>
+                    <Image Source="pack://application:,,,/Assets/nluemix.ico" Stretch="Uniform" Margin="6" />
+                </Border>
+
+                <!-- 字母逐个出现，就是这里的 Letters 面板 -->
+                <StackPanel x:Name="Letters" Orientation="Horizontal"
+                            HorizontalAlignment="Center" Margin="0,18,0,0" />
+
+                <!-- 标语已按要求移除，只留品牌名 -->
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

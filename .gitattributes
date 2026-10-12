@@ -1,0 +1,23 @@
+# 统一按文本处理，避免 Windows 上提交时把 LF 变成 CRLF 导致
+# 在 Linux/macOS 上 clone 下来脚本跑不了（build-server.ps1 之类对行尾敏感）
+* text=auto eol=lf
+
+# 这些必须是二进制，不能被行尾转换碰
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.jar   binary
+*.apk   binary
+*.exe   binary
+*.dll   binary
+*.zip   binary
+
+# PowerShell 脚本在 Windows 上更希望是 CRLF
+*.ps1   text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# 让 GitHub 语言统计正确：这个项目的 C# 和 Kotlin 是主体
+*.cs    linguist-language=C#
+*.kt    linguist-language=Kotlin
+*.xaml  linguist-language=XAML

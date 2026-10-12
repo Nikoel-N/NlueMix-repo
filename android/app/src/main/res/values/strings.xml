@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NlueMix</string>
+
+    <!--
+      系统无障碍设置页里显示的说明文字。
+      必须如实写清楚它做什么、不做什么 —— 用户是看着这句话决定要不要授权的。
+    -->
+    <string name="auto_config_description">用于自动完成「无线调试」的一次性配置：\n\n· 打开开发者选项里的无线调试开关\n· 读出页面上显示的 IP 地址、端口号和配对码\n\n它只操作开发者选项页面，不读取任何其他屏幕内容，不保存也不上传任何内容。不开也能用，只是需要手动配置。</string>
+</resources>

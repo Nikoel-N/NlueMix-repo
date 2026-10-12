@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  对照实验应用：唯一目的就是验证"声明了 allowAudioPlaybackCapture=true 的应用，
+  能否被 MediaProjection 采集到"。所以这里刻意写上这个属性。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="NlueMix 对照测试音"
+        android:allowAudioPlaybackCapture="true"
+        android:theme="@android:style/Theme.Material.Light">
+        <activity
+            android:name=".ToneActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

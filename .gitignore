@@ -1,0 +1,31 @@
+# ── .NET ──
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# ── Android / Gradle ──
+.gradle/
+.gradle-home/
+build/
+local.properties
+*.apk
+*.aab
+captures/
+.cxx/
+
+# ── 安装程序的载荷（编译产物，由构建脚本生成，不进仓库）──
+tools/安装程序/payload/
+
+# ── 运行时产物 ──
+publish/
+发布/
+*.log
+nluemix.log
+settings.json
+
+# ── 系统 ──
+Thumbs.db
+desktop.ini
+.DS_Store

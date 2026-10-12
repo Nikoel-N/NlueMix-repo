@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- AudioPlaybackCapture 在 Android 12+ 要求声明录音权限，否则 getMediaProjection 后采集会失败 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <!-- 麦克风模式用的是 microphone 类型的前台服务，Android 14 起必须单独声明这个权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 纯音频模式要点：锁屏后 CPU 会睡，AudioRecord 读不到数据 → 采集断流。
+         持一个 PARTIAL_WAKE_LOCK 让 CPU 保持运行（屏幕可以关）。 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- HyperOS/MIUI 会主动清后台服务，需要引导用户把这个应用加入电池优化白名单 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <application
+        android:allowAudioPlaybackCapture="${allowCapture}"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NlueMix">
+
+        <!--
+          自动配置向导。
+          无障碍权限只能由用户在系统设置里手动开启，任何 App 都不能自己打开 ——
+          这是 Android 的设计，我们也不该绕过，所以这里只做引导。
+        -->
+        <activity
+            android:name=".AutoConfigActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:label="自动配置无线调试" />
+
+        <!--
+          自动配置用的无障碍服务。
+          只用于操作「开发者选项 → 无线调试」页面：开关开关、读端口、读配对码。
+          exported 必须为 true（系统要绑定它），但受 BIND_ACCESSIBILITY_SERVICE
+          签名级权限保护，只有系统能绑定。
+        -->
+        <service
+            android:name=".AutoConfigService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- 开屏风险提示页。独立 Activity，作为进入主界面的前置闸门，
+             不在这里做采集相关的事，所以不需要任何权限。 -->
+        <activity
+            android:name=".RiskNoticeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:excludeFromRecents="true" />
+
+        <!-- 对照实验用：播放 1 kHz 测试音，用来验证 MediaProjection 到底能不能采到"明确允许被采"的应用 -->
+        <activity
+            android:name=".ToneActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".CaptureService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection|microphone"
+            android:stopWithTask="false" />
+    </application>
+</manifest>

@@ -1,0 +1,18 @@
+<Application x:Class="NlueMix.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!--
+          调色板必须排在前面：Theme.xaml 里的控件样式用 DynamicResource 引用这些颜色，
+          虽然 Dynamic 不要求定义顺序，但把数据放前面读起来更顺。
+          切换深浅主题时替换的就是这一项（见 UI/ThemeManager.cs）。
+        -->
+        <ResourceDictionary Source="UI/Theme.Dark.xaml" />
+        <ResourceDictionary Source="UI/Theme.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>
