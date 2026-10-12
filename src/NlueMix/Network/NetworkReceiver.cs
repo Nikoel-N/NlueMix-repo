@@ -743,6 +743,16 @@ public sealed class NetworkReceiver : IDisposable
 
     public void Stop()
     {
+        // ★ 先把手机采集端停掉，再管接收器自己。
+        //
+        //   原来这里没有这一步：关窗口 → MainWindow.OnClosing → Dispose() → Stop()，
+        //   于是"正在采集时直接关掉程序"，手机上的 app_process 会一直留着，
+        //   继续占着 AudioRecord(REMOTE_SUBMIX)，手机从此没声音。
+        //   StopUsbCapture() 现在会顺手把手机端进程杀掉，所以放在这里兜底。
+        //
+        //   注意放在 IsRunning 判断【之前】：接收器没在跑、但采集在跑，也得清。
+        try { StopUsbCapture(); } catch { }
+
         if (!IsRunning) return;
         IsRunning = false;
         try { _cts.Cancel(); } catch { }

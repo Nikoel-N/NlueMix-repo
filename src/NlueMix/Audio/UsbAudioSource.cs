@@ -538,6 +538,52 @@ public sealed class UsbAudioSource : IDisposable
         try { if (_process is not null && !_process.HasExited) _process.Kill(true); } catch { }
         try { _process?.Dispose(); } catch { }
         _process = null;
+
+        // ★ 手机上的采集端必须单独杀掉，杀本地 adb 是不够的。
+        //
+        //   这里踩过一个真实的坑：Stop() 原来只 Kill 本地的 adb.exe，以为
+        //   "管道断了，对面的 app_process 就会退出"。事实不是这样 ——
+        //   exec-out 的远端进程不会因为本地客户端消失而退出，它会继续持有
+        //   AudioRecord(REMOTE_SUBMIX)。
+        //
+        //   而 Android 的音频策略只要还有 REMOTE_SUBMIX 在采集，就会把
+        //   USAGE_MEDIA 继续送往 "Remote Submix Out" 而不是扬声器。
+        //   表现出来就是用户报的那句话：【停止串流之后，手机自己没声音了】，
+        //   一直静音到手动杀进程或重启手机为止。
+        //
+        //   实测证据（adb shell dumpsys audio）：
+        //     停止前 deviceIds:[6081]  ← 6081 = Remote Submix Out
+        //     手动 pkill 后 deviceIds:[3] ← 3 = Speaker，声音立刻回来
+        KillRemoteServer();
+    }
+
+    /// <summary>
+    /// 把手机上残留的采集端杀干净。失败只记日志，不往上抛 ——
+    /// 停止采集这个动作绝不能因为清理失败而抛异常中断。
+    /// </summary>
+    private void KillRemoteServer()
+    {
+        try
+        {
+            RunAdb($"-s {DeviceSerial} shell pkill -f {ServerClass}", 8000);
+
+            // 复查一次：还在就补一刀硬杀。
+            // 宁可多杀一次，也不能让用户的手机一直没声音。
+            var (code, _) = RunAdb($"-s {DeviceSerial} shell pgrep -f {ServerClass}", 5000);
+            if (code == 0)
+            {
+                RunAdb($"-s {DeviceSerial} shell pkill -9 -f {ServerClass}", 8000);
+                Log.Warn("[USB采集] 采集端没响应 SIGTERM，已强制结束");
+            }
+            else
+            {
+                Log.Info("[USB采集] 手机端采集进程已结束，手机声音恢复");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warn("[USB采集] 停止手机端采集进程失败: " + ex.Message);
+        }
     }
 
     public void Dispose() => Stop();
