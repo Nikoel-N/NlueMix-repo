@@ -18,6 +18,14 @@ captures/
 # ── 安装程序的载荷（编译产物，由构建脚本生成，不进仓库）──
 tools/安装程序/payload/
 
+# ── 一键安装程序：载荷和产物都是编出来的 ──
+tools/一键安装程序/payload.zip
+tools/一键安装程序/out/
+
+# ── Python 缓存 ──
+__pycache__/
+*.pyc
+
 # ── 运行时产物 ──
 publish/
 发布/
