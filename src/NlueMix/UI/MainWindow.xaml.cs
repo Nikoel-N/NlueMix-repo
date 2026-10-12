@@ -793,6 +793,35 @@ public partial class MainWindow : Window
         catch (Exception ex) { Log.Warn("打开反馈窗口失败: " + ex.Message); }
     }
 
+    /// <summary>
+    /// 打开「使用前必读」（查看模式）。
+    ///
+    /// 这是《个人信息保护法》第 15 条要求的撤回同意入口：提示内容随时可查，
+    /// 同意随时可撤 —— 不能只给"同意"不给"撤回"。撤回后按设计直接退出程序，
+    /// 因为用户已经明确表示不再同意这些条款，继续运行没有依据。
+    /// </summary>
+    private void OnShowNotice(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var win = new RiskNoticeWindow(review: true) { Owner = this };
+            win.ShowDialog();
+
+            if (!win.Revoked) return;
+
+            _settings.RiskNoticeAcceptedVersion = null;
+            SettingsStore.Save(_settings);
+            Log.Info("用户撤回了风险提示同意，程序退出");
+
+            MessageBox.Show(this,
+                "已撤回同意，程序将退出。\n\n下次打开会重新显示「使用前必读」，需要重新阅读并同意。",
+                "NlueMix", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex) { Log.Warn("打开使用前必读失败: " + ex.Message); }
+    }
+
     /// <summary>选语言。选完立即重新套用界面文案，不用重启。</summary>
     private void OnPickLanguage(object sender, RoutedEventArgs e)
     {
@@ -953,43 +982,17 @@ public partial class MainWindow : Window
         var result = MessageBox.Show(
             text + "\n\n" +
             "【是】打开日志文件夹\n" +
-            "【否】关闭\n" +
-            "【取消】重新显示开屏风险提示（撤回之前的「永久同意」）",
+            "【否】关闭",
             "NlueMix 运行信息",
-            MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
+            MessageBoxButton.YesNo, MessageBoxImage.Information);
 
         if (result == MessageBoxResult.Yes)
         {
             try { Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + Log.LogPath + "\"") { UseShellExecute = true }); }
             catch { }
         }
-        else if (result == MessageBoxResult.Cancel)
-        {
-            // ★ 撤回入口：这是《个人信息保护法》第 15 条要求的「撤回同意」权。
-            //   只给「永久关闭」而不给重新打开，会落进《消费者权益保护法》第 26 条的
-            //   「排除消费者权利」，条款会被判无效。
-            _settings.SkipRiskNotice = false;
-            SettingsStore.Save(_settings);
-
-            var win = new RiskNoticeWindow { Owner = this };
-            win.ShowDialog();     // 让用户当场就能重新看一遍
-
-            if (win.SkipFromNowOn)
-            {
-                _settings.SkipRiskNotice = true;
-                _settings.RiskNoticeAcceptedVersion = SettingsStore.NoticeVersion;
-            }
-            else if (win.Agreed)
-            {
-                _settings.RiskNoticeAcceptedVersion = SettingsStore.NoticeVersion;
-            }
-            SettingsStore.Save(_settings);
-
-            MessageBox.Show(this,
-                "已重新显示风险提示。\n\n" +
-                "另外说明：「永久关闭」只是不再弹这个窗口，你随时可以用同样的方式重新查看并撤回同意。",
-                "NlueMix", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+        // 撤回同意的入口已挪到工具栏的 📖「使用前必读」里（见 OnShowNotice）。
+        // 原来塞在这个「运行信息」弹窗的【取消】按钮上，既难找、语义也对不上。
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

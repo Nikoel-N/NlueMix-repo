@@ -63,6 +63,7 @@
         android:text="我确认已完整阅读以上全部内容" />
 
     <TextView
+        android:id="@+id/riskHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -85,7 +86,7 @@
             android:textColor="#FFB9BEC7"
             android:textSize="12sp"
             android:textAllCaps="false"
-            android:text="同意，并永久关闭" />
+            android:text="不同意，退出" />
 
         <Button
             android:id="@+id/riskAgree"

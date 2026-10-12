@@ -124,7 +124,11 @@ class MainActivity : AppCompatActivity() {
         // 不会出现"主界面已经开起来、采集可能已经在跑"的情况。
         //
         // 用闸门而不是弹窗，是因为弹窗下面还看得见主界面，容易让人以为软件已经开始工作。
-        if (!RiskNotice.shouldSkip(this)) {
+        //
+        // 判定只看【已同意的文案版本】：同意过一次就不再问，文案改版才重新问。
+        // 千万不要再引入第二个条件（原来那个 skip_risk_notice 就是），
+        // 否则同意后本页会被反复拉起来，两个 Activity 无限互相启动。
+        if (RiskNotice.needsConsent(this)) {
             startActivity(Intent(this, RiskNoticeActivity::class.java))
             finish()
             return
@@ -142,6 +146,13 @@ class MainActivity : AppCompatActivity() {
         // 自动配置入口：走无障碍自动开无线调试、读端口
         findViewById<Button>(R.id.autoConfigButton).setOnClickListener {
             startActivity(Intent(this, AutoConfigActivity::class.java))
+        }
+
+        // 「使用前必读」入口：随时重看风险提示，并在那里撤回同意。
+        // 《个人信息保护法》第 15 条要求同意必须可以撤回，撤回入口不能只藏在系统设置里。
+        findViewById<Button>(R.id.riskNoticeButton).setOnClickListener {
+            startActivity(Intent(this, RiskNoticeActivity::class.java)
+                .putExtra(RiskNoticeActivity.EXTRA_REVIEW, true))
         }
 
         installCrashLogger()

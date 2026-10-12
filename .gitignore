@@ -22,6 +22,9 @@ tools/安装程序/payload/
 tools/一键安装程序/payload.zip
 tools/一键安装程序/out/
 
+# ── shell-server 的编译产物（jar/dex/class 都是 build-server.ps1 生成的）──
+android/shell-server/out/
+
 # ── Python 缓存 ──
 __pycache__/
 *.pyc

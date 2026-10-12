@@ -98,17 +98,12 @@ public sealed class AppSettings
     public List<string> RecentSpeakers { get; set; } = new();
 
     /// <summary>
-    /// 用户点过「同意，并永久关闭此提示」。
+    /// 已同意的风险提示文案版本。等于 SettingsStore.NoticeVersion 时不再弹提示。
     ///
-    /// 注意语义：这个标志为 true 表示用户在**看过并勾选确认**之后主动选择不再弹窗，
-    /// 也就是"永久同意"。它绝不能被程序自己静默置 true —— 那样就等于
-    /// 在用户没看的情况下跳过了信息披露。
-    ///
-    /// 用户可以在「设置 → 关于 → 重新显示风险提示」里把它改回 false，
-    /// 这是《个人信息保护法》第 15 条要求的撤回同意权。
+    /// 这是同意状态的**唯一真源**：同意一次就记住；文案改版后版本对不上，
+    /// 会重新要求确认一次（内容变了，同意自然失效）。
+    /// 用户可以在主界面的 📖「使用前必读」里随时重看并撤回同意
+    /// （撤回后程序退出）—— 这是《个人信息保护法》第 15 条要求的撤回同意权。
     /// </summary>
-    public bool SkipRiskNotice { get; set; }
-
-    /// <summary>同意时的版本号。文案大改后可以提高版本号，让所有用户重新确认一次。</summary>
     public string? RiskNoticeAcceptedVersion { get; set; }
 }

@@ -46,6 +46,8 @@
                   再加一个每个只剩 94px，"图标 + 完整名称"就又要被截断了。
                 -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnNotice" Style="{StaticResource IconButton}" Content="📖"
+                            ToolTip="使用前必读（可随时重看，并撤回同意）" Click="OnShowNotice" />
                     <Button x:Name="BtnFeedback" Style="{StaticResource IconButton}" Content="✉"
                             ToolTip="反馈与联系" vm:LocTag.ToolTipKey="fb.title" Click="OnFeedback" />
                     <Button x:Name="BtnLanguage" Style="{StaticResource IconButton}" Content="🌐"

@@ -181,37 +181,46 @@ object RiskNotice {
     ).joinToString("\n")
 
     /**
-     * 用户点过「同意，并永久关闭此提示」。
+     * 同意状态。只记一个东西：【已同意的文案版本】，null = 从未同意。
      *
-     * 语义：true 表示用户在**看过并勾选确认**之后主动选择不再弹窗，也就是"永久同意"。
-     * 它绝不能被程序自己静默置 true。
+     * 为什么不再用「skip_risk_notice + 版本」两个字段：
+     *   原来点「同意」只写版本、不写 skip，闸门却要求两个都满足，
+     *   于是 MainActivity 一启动就又把提示页拉起来，两个 Activity 无限互相启动，
+     *   用户只能点「永久关闭」才出得来。那等于强迫用户做"永久同意"才能用软件 ——
+     *   正是本页注释里说要避免的诱导。所以改成：同意一次就记住，文案改版才重新问。
      */
-    fun shouldSkip(ctx: Context): Boolean {
-        val p = ctx.getSharedPreferences("nluemix", Context.MODE_PRIVATE)
-        return p.getBoolean("skip_risk_notice", false) &&
-                p.getString("risk_notice_version", null) == NOTICE_VERSION
-    }
+    private fun prefs(ctx: Context) =
+        ctx.getSharedPreferences("nluemix", Context.MODE_PRIVATE)
 
-    fun rememberAgreed(ctx: Context, skipFromNowOn: Boolean) {
-        ctx.getSharedPreferences("nluemix", Context.MODE_PRIVATE).edit()
+    /** 已同意的文案版本；null 表示从未同意过。 */
+    fun acceptedVersion(ctx: Context): String? =
+        prefs(ctx).getString("risk_notice_version", null)
+
+    /** 需不需要弹提示页？没同意过、或文案版本变了，都要重新问一次。 */
+    fun needsConsent(ctx: Context): Boolean = acceptedVersion(ctx) != NOTICE_VERSION
+
+    /** 用户点了「我已阅读并同意」。记住当前版本，之后不再重复弹。 */
+    fun rememberAgreed(ctx: Context) {
+        prefs(ctx).edit()
             .putString("risk_notice_version", NOTICE_VERSION)
-            .putBoolean("skip_risk_notice", skipFromNowOn)
+            .remove("skip_risk_notice")      // 旧版的遗留键，顺手清掉
             .apply()
     }
 
     /**
-     * 撤回入口用：把"永久关闭"改回 false，下次启动重新弹。
+     * 撤回同意：把版本记录清空，下次启动必须重新阅读并同意。
      * 这是《个人信息保护法》第 15 条要求的撤回同意权。
      */
-    fun reset(ctx: Context) {
-        ctx.getSharedPreferences("nluemix", Context.MODE_PRIVATE).edit()
-            .putBoolean("skip_risk_notice", false)
+    fun revoke(ctx: Context) {
+        prefs(ctx).edit()
+            .remove("risk_notice_version")
+            .remove("skip_risk_notice")
             .apply()
     }
 
     /**
      * 文案版本号。权限清单 / 已知问题 / 安全风险有实质改动时加一，
-     * 所有用户（包括点过"永久关闭"的）会重新被要求确认一次。
+     * 所有用户（包括已同意的）会重新被要求确认一次。
      * 内容变了，同意就失效 —— 这是信息披露该有的样子。
      */
     const val NOTICE_VERSION = "2026-10-12.1"

@@ -130,6 +130,22 @@
             android:textColor="#FFFFFF"
             android:textSize="18sp" />
 
+        <!--
+          使用前必读 / 撤回同意。
+          《个人信息保护法》第 15 条要求同意必须可以撤回，撤回入口不能只藏在
+          系统设置的"清除应用数据"里 —— 那等于没有入口。
+        -->
+        <Button
+            android:id="@+id/riskNoticeButton"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="14dp"
+            android:backgroundTint="#F0F0F0"
+            android:text="使用前必读 / 撤回同意"
+            android:textAllCaps="false"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
         <TextView
             android:id="@+id/statusText"
             android:layout_width="match_parent"

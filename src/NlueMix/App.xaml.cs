@@ -75,6 +75,20 @@ public partial class App : Application
 
         base.OnStartup(e);
 
+        // ★★ 必须在【任何窗口出现之前】切到 OnExplicitShutdown。
+        //
+        //   WPF 默认是 OnLastWindowClose：只要当前没有窗口，就认为程序该退出了。
+        //   而启动流程里有一段天然的"零窗口"间隙 —— 风险提示窗已经关掉、
+        //   主窗口还没创建。这一瞬间 WPF 会开始关闭流程，随后开屏动画那段再去设
+        //   ShutdownMode 就会抛：
+        //       InvalidOperationException: 正在关闭或已经关闭应用程序时无法设置 ShutdownMode
+        //   程序当场死掉，用户看到的是"点了同意之后软件闪一下就没了"。
+        //
+        //   实测：用户版（有开屏动画）首发必现；开发者版跳过开屏，所以一直没暴露。
+        //   修复方式就是把 OnExplicitShutdown 提到最前面，主窗口显示后再交还给
+        //   OnMainWindowClose（见文件末尾）。
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
         // ── 应用上次选的主题 ──
         // 必须在创建任何窗口之前：StaticResource 在 XAML 加载时解析，
         // 窗口一旦建出来再换字典，那些静态引用不会跟着变。
@@ -109,16 +123,12 @@ public partial class App : Application
         // ── 开屏动画 ──
         // 只在用户版播；开发者版跳过 —— 调试时每次多等 1.6 秒很折磨。
         // 整段包在 try 里：动画只是锦上添花，绝不能因为它起不来就开不了程序。
+        //
+        // ShutdownMode 已经在 OnStartup 开头切成 OnExplicitShutdown，这里不用再动 ——
+        // 以前是在这里临时切换，但那已经太晚：提示窗关闭造成的零窗口间隙会让
+        // WPF 提前进入关闭流程，赋值直接抛异常（见本方法开头那段注释）。
         if (Core.Edition.IsUser)
         {
-            // ★ 关键：开屏期间必须临时改掉"最后一个窗口关闭就退出"的默认行为。
-            //
-            //   WPF 的 ShutdownMode 默认是 OnLastWindowClose。开屏是此刻【唯一】的窗口，
-            //   它一关，整个 Application 就 Shutdown 了 —— 主窗口根本没机会创建。
-            //   实测症状：开屏正常播完、然后程序直接消失、日志里连异常都没有。
-            //   所以这里先切成 OnExplicitShutdown，播完再切回 OnMainWindowClose。
-            var savedMode = ShutdownMode;
-            ShutdownMode = ShutdownMode.OnExplicitShutdown;
             try
             {
                 var splash = new UI.SplashWindow();
@@ -128,12 +138,6 @@ public partial class App : Application
             {
                 Log.Warn("开屏动画失败（不影响使用）: " + ex.Message);
             }
-            finally
-            {
-                ShutdownMode = savedMode == ShutdownMode.OnExplicitShutdown
-                    ? ShutdownMode.OnMainWindowClose
-                    : savedMode;
-            }
         }
 
         Log.Info("版本形态：" + Core.Edition.Name
@@ -141,6 +145,11 @@ public partial class App : Application
 
         MainWindow = new UI.MainWindow();
         MainWindow.Show();
+
+        // 主窗口已经在屏幕上了，把退出策略交还回去：
+        // 从这里开始，关掉主窗口就该退出程序（之前用 OnExplicitShutdown 是为了
+        // 熬过启动阶段的"零窗口"间隙，见本方法开头的说明）。
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
 
         // 全局兜底：任何未处理异常都不能让程序悄悄死掉
         DispatcherUnhandledException += OnDispatcherUnhandledException;
@@ -176,8 +185,13 @@ public partial class App : Application
     /// <summary>
     /// 开屏风险提示。返回 false 表示用户不同意，调用方应退出程序。
     ///
-    /// 每次启动都弹，除非用户主动选了「永久关闭此提示」。
-    /// 「永久关闭」按钮本身就写着"同意"，所以跳过弹窗 = 已经同意过，两者不矛盾。
+    /// 判定只看【已同意的文案版本】：
+    ///   同意过一次就记住，之后不再弹；文案改版（NoticeVersion 变了）才重新问一次。
+    ///
+    /// 为什么不再要求一个单独的「永久关闭」标志：
+    ///   原来必须点「同意，并永久关闭此提示」才会被记住，点「我已阅读并同意」
+    ///   下次启动照样弹 —— 用户为了能用软件只能去点"永久同意"，这是诱导，
+    ///   和本页要避免的东西自相矛盾。撤回权由主界面的 📖 入口保证。
     /// </summary>
     private static bool ShowRiskNoticeIfNeeded()
     {
@@ -185,10 +199,9 @@ public partial class App : Application
         {
             var settings = Core.SettingsStore.Load();
 
-            if (settings.SkipRiskNotice &&
-                settings.RiskNoticeAcceptedVersion == Core.SettingsStore.NoticeVersion)
+            if (settings.RiskNoticeAcceptedVersion == Core.SettingsStore.NoticeVersion)
             {
-                return true;   // 用户此前主动选择不再显示，且已同意当前版本
+                return true;   // 已同意当前版本
             }
 
             var win = new UI.RiskNoticeWindow();
@@ -199,21 +212,9 @@ public partial class App : Application
                 return false;  // 关掉窗口 = 不同意
             }
 
-            if (win.SkipFromNowOn)
-            {
-                settings.SkipRiskNotice = true;
-                settings.RiskNoticeAcceptedVersion = Core.SettingsStore.NoticeVersion;
-                Core.SettingsStore.Save(settings);
-                Log.Info("用户同意并选择永久关闭风险提示（可在设置里重新打开）");
-            }
-            else
-            {
-                // 本次同意了，但没选永久关闭 —— 下次启动还要弹。
-                // 同时把"当前版本已同意"记下来，方便日后统计。
-                settings.RiskNoticeAcceptedVersion = Core.SettingsStore.NoticeVersion;
-                Core.SettingsStore.Save(settings);
-            }
-
+            settings.RiskNoticeAcceptedVersion = Core.SettingsStore.NoticeVersion;
+            Core.SettingsStore.Save(settings);
+            Log.Info("用户已同意当前版本的风险提示（" + Core.SettingsStore.NoticeVersion + "）");
             return true;
         }
         catch (Exception ex)
