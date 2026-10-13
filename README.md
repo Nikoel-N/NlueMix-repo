@@ -225,3 +225,58 @@ MIT License — 随便用、随便改、随便商用，保留版权声明即可�
 
 本项目**不包含任何广告、推广、遥测、后台上传**。
 不做网络请求（除了局域网内和手机的通信）。
+
+一台音响，所有人的声音。 蓝牙音响同时只认一台设备。NlueMix 让房间里每台手机的声音，都从电脑的这条连接出去。
+
+自己让路 — 手机一出声，电脑自动安静。停两秒，声音自己回来。全程不用碰音量。 三台手机同时在线 — 每台独立音量。混着放，或者轮流来。 到电脑这一段是无损的 — 48 kHz 立体声走局域网。全链路只剩蓝牙那一次编码。 安静的设计 — 无广告、无账号、无遥测。数据不出你的局域网。
+
+Windows 10、Android 10、同一个 Wi-Fi。就这些。
+
+English
+One speaker. Every voice. A Bluetooth speaker only remembers one device. NlueMix routes every phone in the room through your PC to that one connection.
+
+It steps aside on its own — A phone starts playing and the PC goes quiet. Two seconds of silence, and it's back. You never touch a slider. Three phones at once — Each with its own volume. Mix them, or take turns. Lossless as far as your PC — 48 kHz stereo over Wi-Fi. The only compression left is the one Bluetooth already does. Quiet by design — No ads. No accounts. No telemetry. Nothing leaves your network.
+
+Windows 10. Android 10. The same Wi-Fi. That's all it takes.
+
+日本語
+スピーカーはひとつ。みんなの音を。 Bluetooth スピーカーが同時につなげるのは 1 台だけ。NlueMix は PC を介して、部屋にあるスマホの音をすべてその 1 本の接続へ届けます。
+
+鳴ったほうへ、自分でゆずる — スマホが鳴れば PC は静かに。2 秒の静けさのあと、自然に戻ります。音量つまみに触れる必要はありません。 スマホ 3 台まで同時に — それぞれ別の音量で。混ぜても、順番でも。 PC までは無劣化 — 48 kHz ステレオを Wi-Fi でそのまま。圧縮は Bluetooth の 1 回だけ。 静かな設計 — 広告も、アカウントも、テレメトリーもありません。データは LAN の外へ出ません。
+
+Windows 10 以降、Android 10 以降、同じ Wi-Fi。それだけで動きます。
+
+한국어
+스피커는 하나. 모두의 소리를. 블루투스 스피커는 한 번에 한 기기만 기억합니다. NlueMix는 방 안 모든 휴대폰의 소리를 PC를 거쳐 그 하나의 연결로 보냅니다.
+
+소리가 나면, 알아서 비켜줍니다 — 휴대폰이 소리를 내면 PC는 잠잠해지고, 2초 뒤 다시 돌아옵니다. 볼륨을 만질 일이 없습니다. 휴대폰 3대까지 동시에 — 각각 따로 볼륨을 조절합니다. 섞어도, 번갈아도. PC까지는 무손실 — 48 kHz 스테레오를 Wi-Fi로 그대로. 남는 압축은 블루투스 한 번뿐입니다. 조용한 설계 — 광고 없음, 계정 없음, 텔레메트리 없음. 데이터는 공유기 밖으로 나가지 않습니다.
+
+Windows 10 이상, Android 10 이상, 같은 Wi-Fi. 그게 전부입니다.
+
+Deutsch
+Ein Lautsprecher. Alle Stimmen. Ein Bluetooth-Lautsprecher kennt immer nur ein Gerät. NlueMix schickt den Ton jedes Handys im Raum über den PC durch genau diese eine Verbindung.
+
+Macht von selbst Platz — Ein Handy klingt auf, der PC wird still. Zwei Sekunden Ruhe, und er ist zurück. Kein Regler, den man anfassen muss. Drei Handys gleichzeitig — Jedes mit eigener Lautstärke. Gemischt oder nacheinander. Bis zum PC verlustfrei — 48 kHz Stereo über WLAN. Komprimiert wird erst wieder auf dem letzten Meter. Still mit Absicht — Keine Werbung. Keine Konten. Keine Telemetrie. Nichts verlässt Ihr Netzwerk.
+
+Windows 10, Android 10, dasselbe WLAN. Mehr braucht es nicht.
+
+Français
+Une enceinte. Toutes les voix. Une enceinte Bluetooth ne retient qu'un appareil à la fois. NlueMix fait passer le son de chaque téléphone de la pièce par votre PC, sur cette seule connexion.
+
+Elle s'efface d'elle-même — Un téléphone se met à jouer, le PC se tait. Deux secondes de silence, et il revient. Aucun réglage à toucher. Trois téléphones à la fois — Chacun son volume. À mélanger ou à tour de rôle. Sans perte jusqu'au PC — 48 kHz stéréo en Wi-Fi. La seule compression qui reste est celle du Bluetooth. Silencieux par choix — Pas de publicité. Pas de compte. Pas de télémétrie. Rien ne quitte votre réseau.
+
+Windows 10, Android 10, le même Wi-Fi. Il n'en faut pas plus.
+
+Español
+Un altavoz. Todas las voces. Un altavoz Bluetooth solo recuerda un dispositivo. NlueMix lleva el sonido de todos los móviles de la sala a esa única conexión a través del PC.
+
+Se aparta solo — Suena un móvil y el PC se calla. Dos segundos de silencio y vuelve. Sin tocar ningún mando. Tres móviles a la vez — Cada uno con su volumen. Mezclados o por turnos. Sin pérdida hasta el PC — 48 kHz estéreo por Wi-Fi. La única compresión que queda es la del Bluetooth. Silencio por diseño — Sin anuncios. Sin cuentas. Sin telemetría. Nada sale de tu red.
+
+Windows 10, Android 10 y la misma Wi-Fi. No hace falta nada más.
+
+Русский
+Одна колонка. Все голоса. Колонка Bluetooth помнит только одно устройство. NlueMix передаёт на неё звук всех телефонов в комнате — через компьютер, по тому самому единственному соединению.
+
+Уступает сам — Телефон зазвучал — компьютер умолкает. Две секунды тишины, и звук возвращается. Регуляторы трогать не нужно. Три телефона одновременно — У каждого своя громкость. Можно вместе или по очереди. До компьютера — без потерь — Стерео 48 кГц по Wi-Fi. Единственное сжатие — то, что делает Bluetooth. Тишина по замыслу — Без рекламы. Без аккаунтов. Без телеметрии. Ничего не выходит за пределы вашей сети.
+
+Windows 10, Android 10 и один общий Wi-Fi. Больше ничего не нужно.
